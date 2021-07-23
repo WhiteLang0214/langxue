@@ -1,0 +1,30 @@
+{
+  "name": "langxue",
+  "version": "1.0.0",
+  "description": "langxue的文档",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "docs:dev": "vuepress dev docs",
+    "docs:build": "vuepress build docs",
+    "dev": "vuepress dev docs",
+    "build": "vuepress build docs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/WhiteLang0214/langxue.git"
+  },
+  "keywords": [
+    "langxue`s",
+    "notepad"
+  ],
+  "author": "langxue",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/WhiteLang0214/langxue/issues"
+  },
+  "homepage": "https://github.com/WhiteLang0214/langxue#readme",
+  "devDependencies": {
+    "vuepress": "^1.8.2"
+  }
+}
