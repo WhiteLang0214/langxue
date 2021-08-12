@@ -19,6 +19,7 @@ module.exports = {
 		logo: '/lang.png',
 		smoothScroll: true,
 		displayAllHeaders: true,
+		lastUpdated: '更新时间',
 		nav:[ // 导航栏配置
 			{text: 'js', link: '/js/' },
 			{text: '算法题库', link: '/algorithm/'},
@@ -34,6 +35,12 @@ module.exports = {
 				  'js/one',
 					'js/two'
 				]
+			},
+			{
+				title: 'GIT',   // 必要的
+				path: '/git/',      // 可选的, 标题的跳转链接，应为绝对路径且必须存在
+				collapsable: false, // 可选的, 默认值是 true,
+				sidebarDepth: 1,    // 可选的, 默认值是 1
 			},
 		]
 	}
