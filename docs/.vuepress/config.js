@@ -50,7 +50,8 @@ module.exports = {
 				children: [
 					'node/base',
 				  'node/eventEmitter',
-					'node/buffer'
+					'node/buffer',
+					'node/stream'
 				]
 			},
 		]
