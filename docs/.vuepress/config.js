@@ -29,7 +29,7 @@ module.exports = {
 			{
 				title: 'JS',   // 必要的
 				path: '/js/',      // 可选的, 标题的跳转链接，应为绝对路径且必须存在
-				collapsable: false, // 可选的, 默认值是 true,
+				collapsable: true, // 可选的, 默认值是 true,
 				sidebarDepth: 3,    // 可选的, 默认值是 1
 				children: [
 				  'js/one',
@@ -39,8 +39,19 @@ module.exports = {
 			{
 				title: 'GIT',   // 必要的
 				path: '/git/',      // 可选的, 标题的跳转链接，应为绝对路径且必须存在
-				collapsable: false, // 可选的, 默认值是 true,
+				collapsable: true, // 可选的, 默认值是 true,
 				sidebarDepth: 1,    // 可选的, 默认值是 1
+			},
+			{
+				title: 'Node',   // 必要的
+				path: '/node/',      // 可选的, 标题的跳转链接，应为绝对路径且必须存在
+				collapsable: true, // 可选的, 默认值是 true,
+				sidebarDepth: 3,    // 可选的, 默认值是 1
+				children: [
+					'node/base',
+				  'node/eventEmitter',
+					'node/buffer'
+				]
 			},
 		]
 	}
