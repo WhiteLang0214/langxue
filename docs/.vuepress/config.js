@@ -30,13 +30,20 @@ module.exports = {
 				title: 'REACT',   // 必要的
 				path: '/react/',      // 可选的, 标题的跳转链接，应为绝对路径且必须存在
 				collapsable: true, // 可选的, 默认值是 true,
-				sidebarDepth: 3,    // 可选的, 默认值是 1
+				sidebarDepth: 6,    // 可选的, 默认值是 1
 				children: [
-					'react/vdom',
-					'react/xml',
-					'react/jsx',
-					'react/module',
-					'react/component'
+					'',
+					'react/vdom.md',
+					// 'react/xml',
+					'react/jsx.md',
+					'react/module.md',
+					'react/component.md',
+					'react/state.md',
+					'react/props.md',
+					'react/refs.md',
+					'react/form.md',
+					'react/func.md',
+					'react/life.md'
 				]
 			},
 			{
@@ -45,8 +52,8 @@ module.exports = {
 				collapsable: true, // 可选的, 默认值是 true,
 				sidebarDepth: 3,    // 可选的, 默认值是 1
 				children: [
-					'js/one',
-					'js/two'
+					'js/one.md',
+					'js/two.md'
 				]
 			},
 			{
@@ -61,10 +68,10 @@ module.exports = {
 				collapsable: true, // 可选的, 默认值是 true,
 				sidebarDepth: 3,    // 可选的, 默认值是 1
 				children: [
-					'node/base',
-					'node/eventEmitter',
-					'node/buffer',
-					'node/stream'
+					'node/base.md',
+					'node/eventEmitter.md',
+					'node/buffer.md',
+					'node/stream.md'
 				]
 			},
 			{

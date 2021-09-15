@@ -1,3 +1,4 @@
+
 # 函数式组件
 
 - 适用于【简单组件】的定义 无状态组件
@@ -7,22 +8,21 @@
 - this 指向 undefined 。因为经过 babel 编译，开启严格模式 'use strict'，禁止this 指向 window
 
 - 原理
-    执行 ReactDOM.render(<Demo/>, root) 之后
+    执行 `ReactDOM.render(<Demo/>, root)` 之后
     1. react 解析组件标签，找到 Demo 组件
     2. 发现组件是使用函数定义的，随后调用函数，将返回的虚拟 DOM 返回，渲染到页面上
+    
 ```js
 
 function Demo() {
     return <div>demo 函数式组件</div>
 }
 
-ReactDOM.render(<Demo/>, root)
+// ReactDOM.render(<Demo/>, 'root')
 
 ```
 
-# 类式组件
-
-## class 的基本知识
+## class 组件 的基本知识
 
 - 如果 A类 继承了 B类，A类 写了 构造器 constructor，一定要写 super
 
@@ -61,7 +61,7 @@ class Student extends Person {
 
 - 适用于【复杂组件】定义 有状态组件
 
-- 执行 ReactDOM.render(<Democlass/>, document.getElementById('root')) 之后
+- 执行 `ReactDOM.render(<Democlass/>, document.getElementById('root'))` 之后
 
     1. react 解析标签，找到 Democlass 组件，随后 new 了该类的实例，调用原型上的 render 方法，将虚拟 DOM 转为真实dom，渲染到页面
     2. render 存在 类 的原型对象上，供实例使用
@@ -77,7 +77,7 @@ class Democlass extends React.Component {
     }
 }
 
-ReactDOM.render(<Democlass/>, document.getElementById('root'))
+// ReactDOM.render(<Democlass/>, 'root')
 
 ```
 

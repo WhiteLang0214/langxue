@@ -10,7 +10,7 @@
     1. 定义 虚拟DOM 时，不要写引号
     2. 标签内引入 js 语法时，使用花括号 {}
     3. 样式的类名指定应 使用 className
-    4. 标签内写内联样式 使用 双花括号 {{}} style={{key: value}}
+    4. 标签内写内联样式 使用 双花括号 {\{}\}
     5. 虚拟DOM 有且只有一个根标签
     6. 标签必须闭合
     7. 标签首字母
@@ -42,11 +42,11 @@ const vdom = (
 )
 
 // 渲染到页面
-const pdom = document.getElementById('demo')
-ReactDOM.render(vdom, pdom)
+// const pdom = document.getElementById('demo')
+// ReactDOM.render(vdom, 'demo')
 
 ```
 
-## JSX 防止注入攻击
+ # jsx 防止注入攻击
 
 - React DOM 在渲染所有输入内容之前，默认会进行转义。它可以确保在你的应用中，永远不会注入那些并非自己明确编写的内容。所有的内容在渲染之前都被转换成了字符串。这样可以有效地防止 XSS（cross-site-scripting, 跨站脚本）攻击。
