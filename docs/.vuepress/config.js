@@ -27,6 +27,15 @@ module.exports = {
 		],
 		sidebar: [
 			{
+				title: 'VUE3',   // 必要的
+				path: '/vue3/',      // 可选的, 标题的跳转链接，应为绝对路径且必须存在
+				collapsable: true, // 可选的, 默认值是 true,
+				sidebarDepth: 3,    // 可选的, 默认值是 1
+				children: [
+					'vue3/optimize.md',
+				]
+			},
+			{
 				title: 'REACT',   // 必要的
 				path: '/react/',      // 可选的, 标题的跳转链接，应为绝对路径且必须存在
 				collapsable: true, // 可选的, 默认值是 true,
@@ -43,7 +52,8 @@ module.exports = {
 					'react/refs.md',
 					'react/form.md',
 					'react/func.md',
-					'react/life.md'
+					'react/life.md',
+					'react/cli.md'
 				]
 			},
 			{
