@@ -232,3 +232,281 @@ import _isEmpty from 'lodash/isEmpty';
 
 在 webpack4.x 中默认对 tree-shaking 进行了支持。在 webpack2.x 中使用 tree-shaking: [传送门](https://zhuanlan.zhihu.com/p/28725181)
 
+## 2.2 split chunks(分包)
+
+在没配置任何东西的情况下，webpack4就智能的帮你做了代码分包。入口文件依赖的文件都被打包进 main.js，那些 大于30kb 的第三方包，如：echarts、xlsx、dropzone 等都被单独打包成了一个个独立的 bundle。
+
+其它被我们设置了异步加载的页面或者组件变成了一个个 chunk，也就是被打包成独立的 bundle。
+
+它内置的代码分割策略是这样的：
+
+- 新的 chunk 是否被共享或者是来自 node_modules 的模块
+- 新的 chunk 体积在压缩之前是否大于 30kb
+- 按需加载 chunk 的并发请求数量小于等于 5个
+- 页面初始加载时的并发请求数量大于等于 3个
+
+可以根据项目环境更改配置。配置代码如下：
+
+```js
+splitChunks({
+  cacheGroups: {
+    vendors: {
+      name: `chunk-vendors`,
+      test: /[\\/]node_modules[\\/]/,
+      priority: -10,
+      chunks: 'initial',
+    },
+    dll: {
+      name: `chunk-dll`,
+      test: /[\\/]bizcharts|[\\/]\@antv[\\/]data-set/,
+      priority: 15,
+      chunks: 'all',
+      reuseExistingChunk: true
+    },
+    common: {
+      name: `chunk-common`,
+      minChunks: 2,
+      priority: -20,
+      chunks: 'all',
+      reuseExistingChunk: true
+    },
+  }
+})
+
+```
+
+没有使用 webpack4.x 版本的项目，依然可以通过**按需加载**的形式进行分包，使得我们的包分散开，提升加载性能。
+
+按需加载也是一钱分饱的重要手段之一
+
+推荐文章 [webpack如何使用按需加载](https://juejin.cn/post/6844903718387875847)
+
+## 2.3 拆包
+
+与分包不同。上面分包的 bundle 包解析中有个有趣的现象，上面项目的技术栈是 react，但是 bundle 包中并没有 react、react-dom、react-router 等。
+
+因为把这些插件“拆”开了。并没有一起打在 bundle 中。而是放在 CDN 上。下面举个例子来解释一下。
+
+假设：原本 bundle 包为 2M，一次请求拉取。拆分为 bundle（1M） + react桶（CDN）(1M) 两次请求并发拉取
+
+从这个角度看，1+1的模式拉取资源更快
+
+换一个角度来说，全量部署项目的情况，每次部署 bundle 包都将重新拉取。比较浪费资源。react 桶的方式可以命中强缓存，这样的话，就算全量部署也只需要重新拉取左侧 1M 的 bundle 包即可，节省了服务器资源，优化了加载速度。
+
+注意：在本地开发过程中，react 等资源建议不要引入 CDN，开发过程中刷新频繁，会增加 CDN 服务器压力，走本地就好。
+
+## 2.4 gzip
+
+服务端配置 gzip 压缩后可大大缩减资源大小
+
+Nginx 配置方式
+
+```nginx
+http {
+    gzip on;
+    gzip_buffers 32 4k;
+    gzip_comp_level 6;
+    gzip_min_length 100;
+    gzip_types application/javascript text/css text/xml;
+    gaip_disable "MSIE [1-6]\.";
+    gaip_vary on;
+}
+```
+
+配置完成后在 response header 中可查看
+
+![这是图片](/assets/img/gzip.png "gzip")
+
+## 2.5 图片压缩
+
+开发中比较重要的一个环节，压缩图片的常用方式
+
+- [智图压缩](https://zhitu.isux.us/)（百度很难搜到官网了，免费、批量、好用）
+- [tinypng](https://tinypng.com/)（免费、批量、速度快）
+- fireworks 工具压缩像素点和尺寸（自己动手，掌握尺度）
+- 找 UI 压缩
+
+图片压缩是常用的手法，因为设备像素点的关系，UI 给予的图片一般都是 x2,x4的，所以压缩就非常有必要
+
+## 2.6 图片分割
+
+如果页面中有一张效果图，比如真机渲染图，UI 不让压缩，这时候可以考虑下分割图片。
+
+建议单张图片的大小不要超过 100k，我们在分割完图片后，通过布局再拼接在一起。可以提高图片加载效率
+
+注意：分割后的每张图片一定要给 height，否则网速慢的情况下样式会塌陷。
+
+## 2.7 sprite（雪碧图/精灵图）
+
+在网站中有很多小图片的时候，一定要把这些小图片合并为一张大的图片，然后通过 background 分割到需要展示的图片
+
+好处是：
+
+浏览器请求资源的时候，同源域名请求资源的时候有最大并发限制，chrome 为6个。就比如页面上有10个相同 CDN 域名小图片，那么需要发起10次请求去拉取。第一次并发请求回来后，发起第二次并发。 
+
+如果把10个小图片合并为一张大图片的话，那么只需要一次请求即可拉取。减少服务器压力，减少并发，减少请求次数。
+
+## 2.8 CDN（内容分发网络）
+
+服务求是中心化的，CDN 是“去中心化的”
+
+在项目中有很多东西都是放在 CDN 上的，比如：静态文件，音频，视频，js资源，图片。那么为什么用 CDN 会让资源加载变快呢？
+
+举个例子：
+
+> 以前买火车票大家都只能去火车站买，后来买火车票可以在楼下的火车票代售点买。
+
+所以静态资源建议放在 CDN 上，可以加快资源加载的速度
+
+## 2.9 懒加载
+
+懒加载也叫延迟加载，指的是在长网页中延迟加载图像，是一种非常好的优化网页性能的方式。
+
+当可视区域没有滚到资源需要加载的地方时候，可视区域外的资源就不会加载
+
+可以减少服务器负载，常适用于图片很多，页面较长的业务场景中
+
+如果使用：
+
+- [图片懒加载](https://juejin.cn/post/6844903688390049800)
+
+- [layzr.js](https://github.com/callmecavs/layzr.js)
+
+## 2.10 iconfont(字体图标)
+
+好处：
+- 矢量
+- 轻量
+- 易修改
+- 不占用图片资源请求
+
+就像上面的雪碧图，如果都用字体图标来替换的话，一次请求都免了，可以直接打到 bundle 包中。
+
+使用前提是 UI 建立好字体图标库
+
+## 2.11 逻辑后移
+
+逻辑后移是一种比较常见的优化手段，用一个打开文章网站的操作来举个例子
+
+没有逻辑后移处理的请求顺序是这样的：
+
+![逻辑后移](/assets/img/ljhy_1.png "逻辑后移")
+
+页面的展示主题是文章展示，如果文章展示的请求靠后了，那么渲染文章出来的时间必然靠后，因为有可能因为请求阻塞等情况，影响请求响应情况，如果超过一次并发的情况的话，会更加的慢。如图的这种情况也是我们的项目中发生过的
+
+很明显我们应该把主题“请求文章”接口前移，把一些非主体的请求逻辑后移。这样的话可以尽快的把主体渲染出来，就会块很多。
+
+优化后的顺序是这样的
+
+![逻辑后移](/assets/img/ljhy_2.png "逻辑后移")
+
+在平常的开发中建议时常注意逻辑后移的情况，突出主体逻辑。可以极大的提升用户体验。
+
+## 2.12 算法复杂度
+
+在数据量大的应用场景中，需要着重注意算法复杂度问题
+
+在这个方面可以参考 [javascript算法之复杂度分析](https://www.jianshu.com/p/ffbb25380904) 这篇文章
+
+如上面 performance 解析出的 javascript 执行指标上，可以推测出来你的 code 执行效率如何，如果执行时间过长就要考虑一下是否要优化一下复杂度了
+
+> 在时间换空间，空间换时间的选择上，要根据业务场景来进行取舍
+
+## 2.13 组件渲染
+
+拿 react 举例，组件分割方面不要太深。需要控制组件的渲染，尤其是深层组件的 reander
+
+优化组件渲染的方式：
+
+- 生命周期控制 - 比如 react 的 shouldComponentUpdate 来控制组件渲染
+- 官网提供的 api-PureComponent
+- 控制注入组件的参数
+- 分配组件唯一key
+
+没有必要的渲染是对性能的极大浪费
+
+## 2.14 node middleware(node 中间件)
+
+中间件主要是指封装所有 http 请求细节处理的方法。一次 Http 请求通常包含很多工作，如记录日志、ip过滤、查询字符串、请求体解析、Cookie处理、权限验证、参数验证、异常处理等，单对于 Web 应用而言，并不希望接触到这么多细节性的处理，因此引入中间件来简化和隔离这些基础设置与业务逻辑之间的细节，让我们能够关注在业务的开发上，以达到提升开发效率的目的
+
+使用 node middleware 合并请求。减少请求次数。这种方法非常实用
+
+## 2.15 web worker
+
+Web Worker 的作用，就是为 javascript 创造多线程环境，允许主线程创建 Worker 线程，将一些任务分配给后者运行。在主线程运行的同时，Worker 线程在后台运行，两者互不干扰。等到 Worker 线程完成计算任务，再把结果返回给主线程。这样的好处是，一些计算密集型或高延迟的任务，被 Worker 线程负担了，主线程（通常负责 UI 交互）就会很流畅，不会被阻塞或拖慢
+
+合理使用 web worker 可以优化复杂计算任务。[阮一峰的入门文章](http://www.ruanyifeng.com/blog/2018/07/web-worker.html)
+
+## 2.16 缓存
+
+缓存的原理是更快读写的存储介质 + 减少 IO + 减少 CPU 计算 = 性能优化。而性能优化的第一定律就是：优先考虑使用缓存
+
+缓存的主要手段有
+
+- 浏览器缓存
+- CDN
+- 反向代理
+- 本地缓存
+- 分布式缓存
+- 数据库缓存
+
+## 2.17 GPU 渲染
+
+每个网页或多或少都设计到一些 CSS 动画，通常简单的动画对于性能的影响微乎其微，然而如果涉及到稍显复杂的动画，不当的处理方式会使性能问题变得十分突出
+
+像 Chrome、FireFox、Safari、IE9+ 和 最新版本的 Opera 都支持 GPU 加速，当他们检测到页面中某个DOM元素应用了某些 C SS 规则时就会开启
+
+虽然我们可能不想对元素应用 3D 变换，可我们一样可以开启 3D 引擎。例如我们可以用 transform: translateZ(0) 来开启 GPU 加速
+
+只对我们需要实现动画效果的元素应用以上方法，如果仅仅为了开启硬件加速随便乱用，那是不合理的。
+
+## 2.18 Ajax 可缓存
+
+Ajax 在发送的数据成功后，为了提高页面的响应速度和用户体验，会把请求的 URL 和返回的响应结果保存在换村内，当下一次调用 Ajax 发送相同请求（URL和参数完全相同）时，它就会直接从缓存中拿数据。
+
+在进行 Ajax 请求的时候，可以选择尽量使用 get 方法，这样可以使用客户端的缓存，提高请求速度。
+
+## 2.19 Resource Hints
+
+Resource Hints（资源预加载）是非常好的一种性能优化方法，可以大大降低页面加载时间，给用户更加流畅的用户体验
+
+现代浏览器使用大量预测优化技术来预测用户行为和意图，这些技术有预连接、资源与获取、资源预渲染等。
+
+Resource Hints 的思路如下两个：
+
+- 当前将要获取资源的列表
+- 通过当前页面或应用的状态、用户历史行为或 session 预测用户行为及必须的资源
+
+实现 Resource Hints 的方法有很多中，可分为基于 link 标签的 DNS-prefetch、subresource、preload、prefetch、跑reconnect、prerender，和本地存储 localStorage。
+
+## 2.20 SSR
+
+渲染过程在服务器端完成，最终的渲染结果 HTML 页面通过 HTTP 协议发送给客户端，又被认为是“同构”或“通用”，如果你的项目有大量的 detail 页面，相互特别频繁，建议选择服务端渲染
+
+服务端渲染（SSR）除了 SEO 还有很多时候用做首屏优化，加快首屏速度，提高用户体验。但是对服务器有要求，网络传输数据量大，占用部分服务器运算资源
+
+Vue 的 Nuxt.js 和 React 的 next.js 都是服务端渲染的方法
+
+## 2.21 UNPKG
+
+UNPKG 是一个提供 npm 包进行 CDN 加速的站点，因此，可以将一些固定了依赖写入 html 模版中，从而提高网页的性能。首先，需要将这些依赖生命为 external，以便 webpack 打包时不从 node_modules 中加载这些资源，配置如下：
+
+```js
+    externals: { 'react': 'React' }
+```
+
+其次，你需要将所以来的资源写在 html 模版中，这一步需要用到 [html-webpack-plugin](https://link.zhihu.com/?target=https%3A//github.com/jantimon/html-webpack-plugin)
+
+示例：
+
+```js
+<% if (htmlWebpackPlugin.options.node_env === 'development') { %>
+  <script src="https://unpkg.com/react@16.7.0/umd/react.development.js"></script>
+<% } else { %>
+  <script src="https://unpkg.com/react@16.7.0/umd/react.production.min.js"></script>
+<% } %>
+```
+
+这段代码需要注入 node_env，以便在开发的时候能够获得更友好的错误提示。也可以选择一些比较自动的库，来帮助我们完成这样的过程，比如 [webpack-cdn-plugin](https://www.npmjs.com/package/webpack-cdn-plugin) 和 [dynamic-cdn-webpack-plugin](https://github.com/mastilver/dynamic-cdn-webpack-plugin)
+
+[文章来源](https://juejin.cn/post/6904517485349830670#heading-17)
